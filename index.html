@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Stickman Drawing</title>
+  <style>
+    html,body{margin: 0; padding: 0;}
+    body{background: lightgreen;}
+    .center{text-align: center; margin-top:50px}
+    .shoot{margin: auto; width: 70px; height: 30px}
+    #box {margin:auto; width: 400px; height: 300px; border: 4px solid black; padding-bottom: 50px; background: lightyellow;}
+    #stickmanCanvas{position: absolute;}
+  </style>
+</head>
+<body>
+   <div style="text-align: center; margin: 20px 0px;"><b>stickman</b>의 머리를 잡고 움직여보세요. <br>팔다리도 드래그 해보세요.</div>
+  <div id="box">
+    <canvas id="stickmanCanvas" width="400" height="400"></canvas>
+  </div>
+  <div class="center">
+    <button class="shoot"><b>찰칵!</b></button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('stickmanCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let rightArmAngle = -Math.PI / 1.3;
+    let leftArmAngle = Math.PI / 1.3;
+    let leftLegAngle = Math.PI / 1.3;
+    let rightLegAngle = -Math.PI / 1.3;
+
+      rightArmAngle = Math.PI - rightArmAngle;
+    rightArmAngle = -rightArmAngle;
+
+        rightLegAngle = Math.PI - rightLegAngle;
+    rightLegAngle = -rightLegAngle;
+
+
+
+    let bodyX = 200; // 몸 전체의 X 좌표를 추가합니다.
+    let bodyY = 130; // 몸 전체의 Y 좌표를 추가합니다.
+    let isDraggingRightArm = false;
+    let isDraggingLeftArm = false;
+    let isDraggingLeftLeg = false;
+    let isDraggingRightLeg = false;
+    let isDraggingBody = false; // 몸 전체를 드래그하는 상태를 나타내는 변수를 추가합니다.
+
+    function drawStickman() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(bodyX, bodyY); // 몸 전체의 위치로 시작점을 이동합니다.
+      ctx.lineTo(bodyX, bodyY + 100); // 몸 전체를 그립니다.
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(bodyX, bodyY + 15);
+      ctx.lineTo(bodyX + Math.cos(rightArmAngle) * 60, bodyY + 20 + Math.sin(rightArmAngle) * 80);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(bodyX, bodyY + 15);
+      ctx.lineTo(bodyX + Math.cos(leftArmAngle) * 60, bodyY + 20 + Math.sin(leftArmAngle) * 80);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(bodyX, bodyY - 30, 30, 0, Math.PI * 2, true);
+      ctx.fillStyle = 'white';
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(bodyX, bodyY + 100);
+      ctx.lineTo(bodyX + Math.cos(leftLegAngle) * 60, bodyY + 100 + Math.sin(leftLegAngle) * 80);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(bodyX, bodyY + 100);
+      ctx.lineTo(bodyX + Math.cos(rightLegAngle) * 60, bodyY + 100 + Math.sin(rightLegAngle) * 80);
+      ctx.stroke();
+    }
+
+    function updateRightArmAngle(e) {
+      if (isDraggingRightArm) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        rightArmAngle = Math.atan2(mouseY - (bodyY + 20), mouseX - bodyX);
+        drawStickman();
+      }
+    }
+
+    function updateLeftArmAngle(e) {
+      if (isDraggingLeftArm) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        leftArmAngle = Math.atan2(mouseY - (bodyY + 20), mouseX - bodyX);
+        drawStickman();
+      }
+    }
+
+    function updateLeftLegAngle(e) {
+      if (isDraggingLeftLeg) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        leftLegAngle = Math.atan2(mouseY - (bodyY + 100), mouseX - bodyX);
+        drawStickman();
+      }
+    }
+
+    function updateRightLegAngle(e) {
+      if (isDraggingRightLeg) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        rightLegAngle = Math.atan2(mouseY - (bodyY + 100), mouseX - bodyX);
+        drawStickman();
+      }
+    }
+
+    function updateBodyPosition(e) {
+      if (isDraggingBody) {
+        const rect = canvas.getBoundingClientRect();
+        bodyX = e.clientX - rect.left;
+        bodyY = e.clientY - rect.top;
+        drawStickman();
+      }
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const rightArmEndX = bodyX + Math.cos(rightArmAngle) * 60;
+      const rightArmEndY = bodyY + 20 + Math.sin(rightArmAngle) * 60;
+      const rightArmDistance = Math.sqrt(
+        (mouseX - rightArmEndX) ** 2 + (mouseY - rightArmEndY) ** 2
+      );
+
+      const leftArmEndX = bodyX + Math.cos(leftArmAngle) * 60;
+      const leftArmEndY = bodyY + 20 + Math.sin(leftArmAngle) * 60;
+      const leftArmDistance = Math.sqrt(
+        (mouseX - leftArmEndX) ** 2 + (mouseY - leftArmEndY) ** 2
+      );
+
+      const leftLegEndX = bodyX + Math.cos(leftLegAngle) * 60;
+      const leftLegEndY = bodyY + 100 + Math.sin(leftLegAngle) * 60;
+      const leftLegDistance = Math.sqrt(
+        (mouseX - leftLegEndX) ** 2 + (mouseY - leftLegEndY) ** 2
+      );
+
+      const rightLegEndX = bodyX + Math.cos(rightLegAngle) * 60;
+      const rightLegEndY = bodyY + 100 + Math.sin(rightLegAngle) * 60;
+      const rightLegDistance = Math.sqrt(
+        (mouseX - rightLegEndX) ** 2 + (mouseY - rightLegEndY) ** 2
+      );
+
+      const bodyDistance = Math.sqrt(
+        (mouseX - bodyX) ** 2 + (mouseY - bodyY) ** 2
+      );
+
+      if (rightArmDistance < 20) {
+        isDraggingRightArm = true;
+      } else if (leftArmDistance < 20) {
+        isDraggingLeftArm = true;
+      } else if (leftLegDistance < 20) {
+        isDraggingLeftLeg = true;
+      } else if (rightLegDistance < 20) {
+        isDraggingRightLeg = true;
+      } else if (bodyDistance < 40) {
+        isDraggingBody = true;
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      updateRightArmAngle(e);
+      updateLeftArmAngle(e);
+      updateLeftLegAngle(e);
+      updateRightLegAngle(e);
+      updateBodyPosition(e);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDraggingRightArm = false;
+      isDraggingLeftArm = false;
+      isDraggingLeftLeg = false;
+      isDraggingRightLeg = false;
+      isDraggingBody = false;
+    });
+
+    drawStickman();
+  </script>
+</body>
+</html>
